@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="author" content="Jamie Quinn">
+  <title>Radiosity: Global Illumination in Computer Graphics</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="reveal.js/css/reveal.css">
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+  </style>
+  <link rel="stylesheet" href="reveal.js/css/theme/black.css" id="theme">
+  <link rel="stylesheet" href="changes.css"/>
+  <!-- Printing and PDF exports -->
+  <script>
+    var link = document.createElement( 'link' );
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = window.location.search.match( /print-pdf/gi ) ? 'reveal.js/css/print/pdf.css' : 'reveal.js/css/print/paper.css';
+    document.getElementsByTagName( 'head' )[0].appendChild( link );
+  </script>
+  <!--[if lt IE 9]>
+  <script src="reveal.js/lib/js/html5shiv.js"></script>
+  <![endif]-->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.6.0/katex.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.6.0/katex.min.css" /><script type="text/javascript">window.onload = function(){var mathElements = document.getElementsByClassName("math");
+  for (var i=0; i < mathElements.length; i++)
+  {
+   var texText = mathElements[i].firstChild
+   katex.render(texText.data, mathElements[i])
+  }}
+  </script>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section>
+  <h1 class="title">Radiosity: Global Illumination in Computer Graphics</h1>
+  <p class="author">Jamie Quinn</p>
+</section>
+
+<section class="slide level2">
+
+<p>How do we go from this...</p>
+<figure>
+<img src="./wireframe.png" id="id" class="class" height="500" />
+</figure>
+</section>
+<section class="slide level2">
+
+<p>... to this?</p>
+<figure>
+<img src="./radiosity.png" id="id" class="class" height="500" />
+</figure>
+</section>
+<section class="slide level2">
+
+<p>
+How do we go from vertices <span class="fragment"> to pixels?</span>
+</p>
+</section>
+<section id="the-rendering-process" class="slide level2">
+<h2>The Rendering Process</h2>
+<blockquote>
+<p>The automatic process of generating an image from a 2D or 3D model.</p>
+</blockquote>
+</section>
+<section id="example-rendering-algorithms" class="slide level2">
+<h2>Example Rendering Algorithms</h2>
+</section>
+<section><section id="raytracing" class="titleslide slide level1"><h1>Raytracing</h1></section><section class="slide level2">
+
+<figure>
+<img src="./800px-Ray_trace_diagram.png" id="id" class="class" height="500" />
+</figure>
+</section><section id="section" class="slide level2" data-background-image="./Raytracing_reflection.png">
+<h2></h2>
+</section><section id="section-1" class="slide level2" data-background-image="./BallsRender.png">
+<h2></h2>
+</section><section class="slide level2">
+
+<h3 id="but">But!</h3>
+<p>It's slow</p>
+<div class="fragment">
+<p>Used in</p>
+<ul>
+<li class="fragment">Film</li>
+<li class="fragment">TV</li>
+<li class="fragment">Preprocessing of games</li>
+<li class="fragment">Select real time applications</li>
+</ul>
+</div>
+</section></section>
+<section><section id="rasterisation" class="titleslide slide level1"><h1>Rasterisation</h1></section><section id="move-camera" class="slide level2" data-background-image="./model_view_orthographic.png" data-background-size="contain">
+<h2>1. Move Camera</h2>
+</section><section id="apply-perspective" class="slide level2" data-background-image="./model_view.png" data-background-size="contain">
+<h2>2. Apply Perspective</h2>
+</section><section id="rasterise-primitives" class="slide level2" data-background-image="./model_view_filled.png" data-background-size="contain">
+<h2>3. Rasterise Primitives</h2>
+</section><section id="shade" class="slide level2" data-background-image="./model_view_shaded.png" data-background-size="contain">
+<h2>4. Shade</h2>
+</section><section id="shading" class="slide level2">
+<h2>Shading</h2>
+<div class="fragment">
+<blockquote>
+<p>The process of correctly identifying pixel colour due to light sources</p>
+</blockquote>
+</div>
+</section><section class="slide level2">
+
+<h3 id="phong-reflection-model">Phong Reflection Model</h3>
+<figure>
+<img src="./Phong_components_version_4.png" id="id" class="class" height="250" />
+</figure>
+<div class="fragment">
+<p><span class="math display">\displaystyle 
+I_{\text{polygon}} = k_a i_a +  \Sigma_{m \in \text{lights}} (k_d(\vec{L}_m \cdot \vec{N})i_{m,d} + k_s(\vec{R}_m \cdot \vec{V})^{\alpha}i_{m,s})
+</span></p>
+</div>
+<div class="fragment">
+<p>
+This applies to each of the <span class="fragment" style="color:red"> red</span> <span class="fragment">, <span style="color:green">green</span></span> <span class="fragment">and <span style="color:blue">blue</span> channels.</span>
+</p>
+</div>
+</section><section id="but-1" class="slide level2">
+<h2>But!</h2>
+<p>It's not very photorealistic, it can't deal easily with</p>
+<ul>
+<li class="fragment">Reflections</li>
+<li class="fragment">Refraction</li>
+<li class="fragment">Soft shadows</li>
+</ul>
+<div class="fragment">
+<p>Used mainly in games and real time applications</p>
+</div>
+<div class="fragment">
+<p>Is the basis for current graphics hardware</p>
+</div>
+</section></section>
+<section><section id="shading-and-illumination" class="titleslide slide level1"><h1>Shading and Illumination</h1></section><section id="direct-illumination" class="slide level2">
+<h2>Direct Illumination</h2>
+</section><section id="section-2" class="slide level2" data-transition="fade">
+<h2></h2>
+<figure>
+<img src="./direct_illumination.png" id="id" class="class" height="600" />
+</figure>
+</section><section id="section-3" class="slide level2" data-transition="fade">
+<h2></h2>
+<figure>
+<img src="./direct_illumination_arrows.png" id="id" class="class" height="600" />
+</figure>
+</section><section id="global-illumination" class="slide level2">
+<h2>Global Illumination</h2>
+</section><section id="section-4" class="slide level2" data-transition="fade-out">
+<h2></h2>
+<figure>
+<img src="./direct_illumination.png" id="id" class="class" height="600" />
+</figure>
+</section><section id="section-5" class="slide level2" data-transition="fade">
+<h2></h2>
+<figure>
+<img src="./global_illumination.png" id="id" class="class" height="600" />
+</figure>
+</section><section id="section-6" class="slide level2" data-transition="fade-in">
+<h2></h2>
+<figure>
+<img src="./global_illumination_arrows.png" id="id" class="class" height="600" />
+</figure>
+</section><section class="slide level2">
+
+<p><strong>Direct Illumination Techniques</strong></p>
+<ul>
+<li class="fragment">Rasterisation + Phong model</li>
+<li class="fragment">Zero bounce raytracing</li>
+</ul>
+<div class="fragment">
+<p><strong>Global Illumination Techniques</strong></p>
+<ul>
+<li class="fragment">Raytracing (usually)</li>
+<li class="fragment">Raycasting</li>
+<li class="fragment">Radiosity</li>
+</ul>
+</div>
+</section></section>
+<section><section id="radiosity" class="titleslide slide level1"><h1>Radiosity</h1></section><section id="radiosity-1" class="slide level2">
+<h2>Radiosity</h2>
+<blockquote>
+<p>The light energy emitted per surface area per time</p>
+</blockquote>
+<div class="fragment">
+<p>Made up of</p>
+<ol type="1">
+<li class="fragment">Light emitted</li>
+<li class="fragment">Light reflected</li>
+</ol>
+</div>
+</section><section class="slide level2">
+
+<p>If we know the radiosity of every surface, we have solved the shading problem!</p>
+</section><section id="radiosity-equation" class="slide level2">
+<h2>Radiosity Equation</h2>
+<p>For a surface patch <span class="math inline">i</span>,</p>
+<p><span class="math display">\displaystyle 
+B_i = E_i + r_i \Sigma_j F_{ij} B_j,
+</span></p>
+<div class="fragment">
+<p>or for the entire scene,</p>
+<p><span class="math display">\displaystyle 
+\vec{B} = (\mathbf{I} - \vec{r}\, \mathbf{F})^{-1}\vec{E}
+</span></p>
+</div>
+</section><section id="the-form-factor" class="slide level2">
+<h2>The Form Factor</h2>
+<blockquote>
+<p>A single number between 0 and 1 describing the spatial relationship between two surfaces</p>
+</blockquote>
+<ul>
+<li class="fragment">Is one surface visible from another?</li>
+<li class="fragment">Are two surfaces very close?</li>
+<li class="fragment">Are two surfaces relatively large?</li>
+</ul>
+</section><section class="slide level2">
+
+<figure>
+<img src="./select_patch2.png" id="id" class="class" height="600" />
+</figure>
+</section><section class="slide level2">
+
+<figure>
+<img src="./View_factor_two_differential_areas_illustration.svg" id="id" class="class" height="300" />
+</figure>
+<div class="fragment">
+<p><span class="math display">\displaystyle 
+dF_{1 \to 2} = \frac{\cos \theta_1 \cos \theta_2}{\pi s^2} dA_2
+</span></p>
+</div>
+<div class="fragment">
+<p><span class="math display">\displaystyle 
+F_{1 \to 2} = \frac{1}{A_1} \int_{A_1} \int_{A_2} \frac{\cos \theta_1 \cos \theta_2}{\pi s^2} dA_2 dA_1
+</span></p>
+</div>
+</section><section class="slide level2">
+
+<p>So, a recipe for calculating a scenes radiosity could be</p>
+<ol type="1">
+<li class="fragment">Find all pairwise form factors</li>
+<li class="fragment">Invert radiosity equation</li>
+<li class="fragment">Done!</li>
+</ol>
+</section><section id="but-2" class="slide level2">
+<h2>But!</h2>
+<p>This &quot;exact&quot; method is slow.</p>
+<div class="fragment">
+<p>Can we find a faster method?</p>
+</div>
+</section></section>
+<section><section id="the-hemicube-approximation" class="titleslide slide level1"><h1>The Hemicube Approximation</h1></section><section class="slide level2">
+
+<p><strong>The Nusselt Analog</strong></p>
+<figure>
+<img src="./Nusselt_analog.svg" id="id" class="class" height="350" />
+</figure>
+<p>Idea: Project a patch onto a hemisphere around another patch, then down onto the plane of the patch</p>
+</section><section class="slide level2">
+
+<p>Projecting every patch onto a hemisphere like this</p>
+<figure>
+<img src="./hemisphere_over_patch.png" id="id" class="class" height="500" />
+</figure>
+</section><section class="slide level2">
+
+<p>looks like this</p>
+<figure>
+<img src="./patch_view1.png" id="id" class="class" height="500" />
+</figure>
+</section><section class="slide level2">
+
+<p>In the differential limit, the projection leads to the same form factor integral as earlier</p>
+<div class="fragment">
+<p>but</p>
+</div>
+<div class="fragment">
+<p>Make the patches &quot;small enough&quot; and we don't even need to bother with the double integral...</p>
+</div>
+</section><section id="going-further-the-hemicube-approximation" class="slide level2">
+<h2>Going further: The Hemicube Approximation</h2>
+</section><section class="slide level2">
+
+<figure>
+<img src="./hemisphere_over_patch.png" id="id" class="class" height="600" />
+</figure>
+</section><section class="slide level2">
+
+<figure>
+<img src="./hemicube_over_patch.png" id="id" class="class" height="600" />
+</figure>
+</section><section class="slide level2">
+
+<p>The projection is now an implementation of the rasterisation algorithm seen earlier!</p>
+</section></section>
+<section><section id="rasterising-the-form-factor" class="titleslide slide level1"><h1>Rasterising the Form Factor</h1></section><section id="positioning-the-camera" class="slide level2">
+<h2>Positioning the camera</h2>
+<div class="fragment">
+<p>Translation: Move the entire world.</p>
+</div>
+<div class="fragment">
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">Matrix formHemicubeMVP(<span class="at">const</span> Vec3f&amp; eye, <span class="at">const</span> Vec3f&amp; dir, <span class="at">const</span> Vec3f&amp; up) {
+  Matrix translation = formTranslation(eye*<span class="dv">-1</span>);
+  Matrix view = lookAt(Vec3f(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>), dir, up)*translation;
+  Matrix projection = formRightAngledProjection(HEMICUBE_NEAR_PLANE, <span class="fl">20.0f</span>);
+  <span class="cf">return</span> projection*view;
+}</code></pre></div>
+</div>
+</section><section id="rasterise-to-a-hemicube-face" class="slide level2">
+<h2>Rasterise to a hemicube face</h2>
+</section><section id="section-7" class="slide level2" data-background-video="./rasterisation.webm" data-background-size="contain">
+<h2></h2>
+</section><section id="but-3" class="slide level2">
+<h2>But!</h2>
+<div class="fragment">
+<p>Which patches are in front?</p>
+</div>
+</section><section id="wrong" class="slide level2" data-background-video="./z_wrong_anim.webm" data-background-size="contain">
+<h2>WRong</h2>
+</section><section id="right" class="slide level2" data-background-video="./z_right_anim.webm" data-background-size="contain">
+<h2>Right</h2>
+</section><section id="z-buffer-algorithm" class="slide level2">
+<h2>Z-buffer Algorithm</h2>
+<p>Only if a pixel does not have a closer depth value (<span class="math inline">z</span>-value) do we fill with the current triangle colour.</p>
+</section><section id="another-but" class="slide level2">
+<h2>Another But!</h2>
+<p>Which patches are facing the right way?</p>
+</section><section id="back-face-culling" class="slide level2">
+<h2>Back-Face Culling</h2>
+<p>If <span class="math inline">\vec{N}.\vec{s} &gt; 0</span>, form factor is zero.</p>
+</section></section>
+<section><section id="the-final-form-factor" class="titleslide slide level1"><h1>The Final Form Factor</h1></section><section class="slide level2">
+
+<p>In order to fully approximate the hemisphere, the projected areas are added up with weights</p>
+</section><section class="slide level2">
+
+<figure>
+<img src="./topFaceFactors.png" id="id" class="class" height="600" />
+</figure>
+</section><section class="slide level2">
+
+<figure>
+<img src="./sideFaceFactors.png" id="id" class="class" height="600" />
+</figure>
+</section><section class="slide level2">
+
+<p>Note: A single projection produces the form factors between one patch and <strong>every</strong> other patch.</p>
+</section></section>
+<section><section id="caveats" class="titleslide slide level1"><h1>Caveats</h1></section><section id="memory-intensive" class="slide level2">
+<h2>Memory Intensive</h2>
+<p>For a virtual scene with <span class="math inline">n</span> polygons, we require <span class="math inline">\mathcal{O}(n^2)</span> form factors</p>
+<div class="fragment">
+<p>Solution?</p>
+</div>
+</section><section id="progressive-refinement" class="slide level2">
+<h2>Progressive Refinement</h2>
+<p>Idea: Forget calculating every form factor at once, do it bit by bit</p>
+<ol type="1">
+<li class="fragment">Choose a patch</li>
+<li class="fragment">Calculate the form factors between it and every patch</li>
+<li class="fragment">Shoot (or gather) the radiosity to (from) every patch</li>
+<li class="fragment">Repeat until converged</li>
+</ol>
+</section><section id="possibly-wasteful-patch-sizes" class="slide level2">
+<h2>Possibly wasteful patch sizes</h2>
+<p>In certain scenes there should be more detail around shadow edges than in well lit areas.</p>
+<div class="fragment">
+<p>Solution?</p>
+</div>
+</section><section id="substructuring" class="slide level2">
+<h2>substructuring</h2>
+<p>Idea: Take every patch and dynamically break it down into smaller patches</p>
+</section></section>
+<section><section id="thanks-for-listening" class="titleslide slide level1" data-background-image="./radiosity.png" data-background-size="contain"><h1>Thanks For Listening</h1></section></section>
+    </div>
+  </div>
+
+  <script src="reveal.js/lib/js/head.min.js"></script>
+  <script src="reveal.js/js/reveal.js"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        // Push each slide change to the browser history
+        history: true,
+        // Transition style
+        transition: 'none', // none/fade/slide/convex/concave/zoom
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: 'reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'reveal.js/plugin/zoom-js/zoom.js', async: true },
+              { src: 'reveal.js/plugin/notes/notes.js', async: true }
+        ]
+      });
+    </script>
+    </body>
+</html>
